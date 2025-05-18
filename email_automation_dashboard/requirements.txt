@@ -3,3 +3,4 @@ pandas
 yagmail
 keyring
 python-dotenv
+matplotlib
