@@ -13,7 +13,7 @@ def admin_dashboard():
         st.info("No approved requests.")
     else:
         for row in rows:
-            st.write(f"Employee: {row[2]} | Manager: {row[8]} | From: {row[3]} To: {row[4]} | Date: {row[5]} | Mode: {row[7]}")
+            st.write(f"Employee ID: {row[1]} | Employee: {row[2]} | Manager: {row[8]} | From: {row[3]} To: {row[4]} | Date: {row[5]} | Mode: {row[7]}")
             if st.button(f"Mark as Booked_{row[0]}"):
                 c.execute("UPDATE requests SET status='Booked' WHERE id=?", (row[0],))
                 conn.commit()
