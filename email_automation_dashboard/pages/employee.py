@@ -17,24 +17,23 @@ def employee_dashboard():
     st.header("Employee Dashboard")
     emp_id = st.text_input("Enter Employee ID")
     emp_name = st.text_input("Enter Your Name")
-    emp_email = st.text_input("Enter Your Email ID")
-    if emp_email and not pd.Series([emp_email]).str.match(r"^[\w\.-]+@[\w\.-]+\.\w+$").bool():
-        st.error("Please enter a valid email address.")
+    # emp_email = st.text_input("Enter Your Email ID")
+    # if emp_email and not pd.Series([emp_email]).str.match(r"^[\w\.-]+@[\w\.-]+\.\w+$").bool():
+    #     st.error("Please enter a valid email address.")
 
-    if emp_id and emp_name and emp_email:
+    if emp_id and emp_name:
         tab1, tab2 = st.tabs(["Book Your Travel", "Insights"])
         with tab1:
             travel_details = get_travel_details()
             if st.button("Submit Travel Request"):
-                if not emp_email.strip():
-                    st.error("Employee Email is required.")
-                elif not pd.Series([emp_email]).str.match(r"^[\w\.-]+@[\w\.-]+\.\w+$").bool():
-                    st.error("Please enter a valid email address.")
-                elif validate_inputs(emp_id, emp_name, travel_details):
+                if validate_inputs(emp_id, emp_name, travel_details):
                     if save_to_database(emp_id, emp_name, travel_details):
-                        send_email_notification(emp_name, emp_id, travel_details, emp_email)
+                        send_email_notification(emp_name, emp_id, travel_details, st.session_state['user_email'])
         with tab2:
-            display_employee_chart(emp_id)
+            try:
+                display_employee_chart(emp_id)
+            except:
+                st.write("No data available for this employee ID.")
 
 
 def get_travel_details():
@@ -81,10 +80,10 @@ def save_to_database(emp_id, emp_name, travel_details):
         c = conn.cursor()
         c.execute("""CREATE TABLE IF NOT EXISTS requests (
                      id INTEGER PRIMARY KEY AUTOINCREMENT,
-                     emp_id TEXT, emp_name TEXT, source TEXT, destination TEXT, date TEXT, 
+                     emp_id TEXT, emp_name TEXT, emp_email, source TEXT, destination TEXT, date TEXT, 
                      time TEXT, mode TEXT, manager TEXT, status TEXT)""")
-        c.execute("INSERT INTO requests (emp_id, emp_name, source, destination, date, time, mode, manager, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                  (emp_id, emp_name, travel_details["source"], travel_details["destination"], str(travel_details["date"]), str(travel_details["time"]), travel_details["mode"], travel_details["manager"], "Pending"))
+        c.execute("INSERT INTO requests (emp_id, emp_name, emp_email, source, destination, date, time, mode, manager, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                  (emp_id, emp_name, st.session_state['user_email'], travel_details["source"], travel_details["destination"], str(travel_details["date"]), str(travel_details["time"]), travel_details["mode"], travel_details["manager"], "Pending"))
         conn.commit()
         return True
     except sqlite3.Error as e:

@@ -88,7 +88,7 @@ def handle_request_action(c, conn, row, action, is_dict=True):
             contents = (
                 f"Your travel request from {row['From']} to {row['To']} has been rejected."
             )
-            send_email(st.session_state["user_email"], "Travel Request Rejected", contents)
+            send_email(row["Employee Email"], "Travel Request Rejected", contents)
         st.warning("Rejected and email sent to employee.")
 
 def display_requests(df, c, conn):
@@ -243,7 +243,7 @@ def manager_dashboard():
             return
 
         columns = [
-            "ID", "Employee ID", "Employee Name", "From", "To",
+            "ID", "Employee ID", "Employee Name", "Employee Email", "From", "To",
             "Date", "Time", "Mode", "Manager", "Status"
         ]
         df = pd.DataFrame(rows, columns=columns)
