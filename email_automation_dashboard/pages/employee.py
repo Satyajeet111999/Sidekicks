@@ -33,7 +33,7 @@ def get_travel_details():
     date = st.date_input("Travel Date", min_value=datetime.today().date())
     time = st.time_input("Travel Time")
     mode = st.selectbox("Mode of Travel", ["Flight", "Train", "Bus", "Car"])
-    manager = st.selectbox("Select Manager", ["portal.automation8@gmail.com", "manager2@example.com"])
+    manager = st.selectbox("Select Manager", ["portal.automation8@gmail.com", "28satyajeet99@gmail.com"])
     return {"source": source, "destination": destination, "date": date, "time": time, "mode": mode, "manager": manager}
 
 
