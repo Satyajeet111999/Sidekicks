@@ -17,14 +17,24 @@ def employee_dashboard():
     st.header("Employee Dashboard")
     emp_id = st.text_input("Enter Employee ID")
     emp_name = st.text_input("Enter Your Name")
+    emp_email = st.text_input("Enter Your Email ID")
+    if emp_email and not pd.Series([emp_email]).str.match(r"^[\w\.-]+@[\w\.-]+\.\w+$").bool():
+        st.error("Please enter a valid email address.")
 
-    if emp_id and emp_name:
-        display_employee_chart(emp_id)
-        travel_details = get_travel_details()
-        if st.button("Submit Travel Request"):
-            if validate_inputs(emp_id, emp_name, travel_details):
-                if save_to_database(emp_id, emp_name, travel_details):
-                    send_email_notification(emp_name,emp_id, travel_details)
+    if emp_id and emp_name and emp_email:
+        tab1, tab2 = st.tabs(["Book Your Travel", "Insights"])
+        with tab1:
+            travel_details = get_travel_details()
+            if st.button("Submit Travel Request"):
+                if not emp_email.strip():
+                    st.error("Employee Email is required.")
+                elif not pd.Series([emp_email]).str.match(r"^[\w\.-]+@[\w\.-]+\.\w+$").bool():
+                    st.error("Please enter a valid email address.")
+                elif validate_inputs(emp_id, emp_name, travel_details):
+                    if save_to_database(emp_id, emp_name, travel_details):
+                        send_email_notification(emp_name, emp_id, travel_details, emp_email)
+        with tab2:
+            display_employee_chart(emp_id)
 
 
 def get_travel_details():
@@ -84,7 +94,7 @@ def save_to_database(emp_id, emp_name, travel_details):
         conn.close()
 
 
-def send_email_notification(emp_name, emp_id, travel_details):
+def send_email_notification(emp_name, emp_id, travel_details, emp_email):
     try:
         yag = yagmail.SMTP(EMAIL_USER)
         # Transport mode logos (using emoji for simplicity)
@@ -131,7 +141,12 @@ def send_email_notification(emp_name, emp_id, travel_details):
             </body>
         </html>
         """
-        yag.send(to=travel_details["manager"], subject="New Travel Request", contents=button_html)
+        yag.send(
+            to=travel_details["manager"],
+            cc=emp_email,
+            subject="New Travel Request",
+            contents=button_html
+        )
         st.success("Request sent to manager successfully!")
     except Exception as e:
         st.error(f"Failed to send email: {e}")
@@ -180,3 +195,4 @@ def display_employee_chart(emp_id):
         st.error(f"Database error: {e}")
     except Exception as e:
         st.error(f"An error occurred: {e}")
+
